@@ -30258,6 +30258,60 @@ static SDValue performVSelectCombine(SDNode *N,
                      IfTrue, IfFalse);
 }
 
+static SDValue
+performFindLastActiveSelectCombine(SDNode *N,
+                                   TargetLowering::DAGCombinerInfo &DCI) {
+  if (DCI.isBeforeLegalize())
+    return SDValue();
+
+  SelectionDAG &DAG = DCI.DAG;
+  // Replace the reduction used to detect an empty mask with a check of the
+  // sentinel returned by FIND_LAST_ACTIVE.
+  //
+  //   select (and (extract (UMAXV Mask), 0), 1),
+  //          (extract Vec, Find), Passthru
+  //
+  // becomes:
+  //
+  //   select (setne Find, -1), Extract, Passthru
+  SDValue Cond = N->getOperand(0);
+  if (Cond.getOpcode() != ISD::AND)
+    return SDValue();
+
+  SDValue Reduced;
+  if (isOneConstant(Cond.getOperand(0)))
+    Reduced = Cond.getOperand(1);
+  else if (isOneConstant(Cond.getOperand(1)))
+    Reduced = Cond.getOperand(0);
+
+  SDValue Extract = N->getOperand(1);
+  if (!Reduced || Reduced.getOpcode() != ISD::EXTRACT_VECTOR_ELT ||
+      !isNullConstant(Reduced.getOperand(1)) ||
+      Reduced.getOperand(0).getOpcode() != AArch64ISD::UMAXV ||
+      Extract.getOpcode() != ISD::EXTRACT_VECTOR_ELT)
+    return SDValue();
+
+  SDValue Find = Extract.getOperand(1);
+  if (Find.getOpcode() != AArch64ISD::FIND_LAST_ACTIVE)
+    return SDValue();
+
+  SDValue FindMask = Find.getOperand(0);
+  while (FindMask.getOpcode() == ISD::TRUNCATE)
+    FindMask = FindMask.getOperand(0);
+  SDValue ReducedMask = Reduced.getOperand(0).getOperand(0);
+  while (ReducedMask.getOpcode() == ISD::BITCAST)
+    ReducedMask = ReducedMask.getOperand(0);
+  if (FindMask != ReducedMask)
+    return SDValue();
+
+  SDLoc DL(N);
+  SDValue IsActive =
+      DAG.getSetCC(DL, Cond.getValueType(), Find,
+                   DAG.getAllOnesConstant(DL, Find.getValueType()), ISD::SETNE);
+  return DAG.getSelect(DL, N->getValueType(0), IsActive, Extract,
+                       N->getOperand(2));
+}
+
 /// A vector select: "(select vL, vR, (setcc LHS, RHS))" is best performed with
 /// the compare-mask instructions rather than going via NZCV, even if LHS and
 /// RHS are really scalar. This replaces any scalar setcc in the above pattern
@@ -30267,6 +30321,9 @@ static SDValue performSelectCombine(SDNode *N,
   SelectionDAG &DAG = DCI.DAG;
   SDValue N0 = N->getOperand(0);
   EVT ResVT = N->getValueType(0);
+
+  if (SDValue R = performFindLastActiveSelectCombine(N, DCI))
+    return R;
 
   if (N0.getOpcode() != ISD::SETCC)
     return SDValue();

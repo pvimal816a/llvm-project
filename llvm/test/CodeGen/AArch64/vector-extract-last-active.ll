@@ -56,16 +56,13 @@ define i8 @extract_last_i8(<16 x i8> %data, <16 x i8> %mask, i8 %passthru) {
 ; SVE2P2-FIXED-NEXT:    ptrue p0.b, vl16
 ; SVE2P2-FIXED-NEXT:    // kill: def $q1 killed $q1 def $z1
 ; SVE2P2-FIXED-NEXT:    mov x9, sp
-; SVE2P2-FIXED-NEXT:    cmtst v3.16b, v1.16b, v1.16b
 ; SVE2P2-FIXED-NEXT:    str q0, [sp]
 ; SVE2P2-FIXED-NEXT:    cmpne p1.b, p0/z, z1.b, z2.b
-; SVE2P2-FIXED-NEXT:    umaxv b1, v3.16b
 ; SVE2P2-FIXED-NEXT:    lastp x8, p0, p1.b
 ; SVE2P2-FIXED-NEXT:    bfxil x9, x8, #0, #4
-; SVE2P2-FIXED-NEXT:    ldrb w8, [x9]
-; SVE2P2-FIXED-NEXT:    fmov w9, s1
-; SVE2P2-FIXED-NEXT:    tst w9, #0x1
-; SVE2P2-FIXED-NEXT:    csel w0, w8, w0, ne
+; SVE2P2-FIXED-NEXT:    cmn x8, #1
+; SVE2P2-FIXED-NEXT:    ldrb w9, [x9]
+; SVE2P2-FIXED-NEXT:    csel w0, w9, w0, ne
 ; SVE2P2-FIXED-NEXT:    add sp, sp, #16
 ; SVE2P2-FIXED-NEXT:    ret
 ;
@@ -140,15 +137,13 @@ define i16 @extract_last_i16(<8 x i16> %data, <8 x i16> %mask, i16 %passthru) {
 ; SVE2P2-FIXED-NEXT:    ptrue p0.b, vl8
 ; SVE2P2-FIXED-NEXT:    mov x9, sp
 ; SVE2P2-FIXED-NEXT:    str q0, [sp]
-; SVE2P2-FIXED-NEXT:    xtn v2.8b, v1.8h
-; SVE2P2-FIXED-NEXT:    umaxv h1, v1.8h
-; SVE2P2-FIXED-NEXT:    cmpne p1.b, p0/z, z2.b, #0
+; SVE2P2-FIXED-NEXT:    xtn v1.8b, v1.8h
+; SVE2P2-FIXED-NEXT:    cmpne p1.b, p0/z, z1.b, #0
 ; SVE2P2-FIXED-NEXT:    lastp x8, p0, p1.b
 ; SVE2P2-FIXED-NEXT:    bfi x9, x8, #1, #3
-; SVE2P2-FIXED-NEXT:    ldrh w8, [x9]
-; SVE2P2-FIXED-NEXT:    fmov w9, s1
-; SVE2P2-FIXED-NEXT:    tst w9, #0x1
-; SVE2P2-FIXED-NEXT:    csel w0, w8, w0, ne
+; SVE2P2-FIXED-NEXT:    cmn x8, #1
+; SVE2P2-FIXED-NEXT:    ldrh w9, [x9]
+; SVE2P2-FIXED-NEXT:    csel w0, w9, w0, ne
 ; SVE2P2-FIXED-NEXT:    add sp, sp, #16
 ; SVE2P2-FIXED-NEXT:    ret
 ;
@@ -225,15 +220,13 @@ define i32 @extract_last_i32(<4 x i32> %data, <4 x i32> %mask, i32 %passthru) {
 ; SVE2P2-FIXED-NEXT:    ptrue p0.h, vl4
 ; SVE2P2-FIXED-NEXT:    mov x9, sp
 ; SVE2P2-FIXED-NEXT:    str q0, [sp]
-; SVE2P2-FIXED-NEXT:    xtn v2.4h, v1.4s
-; SVE2P2-FIXED-NEXT:    umaxv s1, v1.4s
-; SVE2P2-FIXED-NEXT:    cmpne p1.h, p0/z, z2.h, #0
+; SVE2P2-FIXED-NEXT:    xtn v1.4h, v1.4s
+; SVE2P2-FIXED-NEXT:    cmpne p1.h, p0/z, z1.h, #0
 ; SVE2P2-FIXED-NEXT:    lastp x8, p0, p1.h
 ; SVE2P2-FIXED-NEXT:    bfi x9, x8, #2, #2
-; SVE2P2-FIXED-NEXT:    ldr w8, [x9]
-; SVE2P2-FIXED-NEXT:    fmov w9, s1
-; SVE2P2-FIXED-NEXT:    tst w9, #0x1
-; SVE2P2-FIXED-NEXT:    csel w0, w8, w0, ne
+; SVE2P2-FIXED-NEXT:    cmn x8, #1
+; SVE2P2-FIXED-NEXT:    ldr w9, [x9]
+; SVE2P2-FIXED-NEXT:    csel w0, w9, w0, ne
 ; SVE2P2-FIXED-NEXT:    add sp, sp, #16
 ; SVE2P2-FIXED-NEXT:    ret
 ;
@@ -310,15 +303,13 @@ define i64 @extract_last_i64(<2 x i64> %data, <2 x i64> %mask, i64 %passthru) {
 ; SVE2P2-FIXED-NEXT:    ptrue p0.s, vl2
 ; SVE2P2-FIXED-NEXT:    mov x9, sp
 ; SVE2P2-FIXED-NEXT:    str q0, [sp]
-; SVE2P2-FIXED-NEXT:    xtn v2.2s, v1.2d
-; SVE2P2-FIXED-NEXT:    umaxv s1, v1.4s
-; SVE2P2-FIXED-NEXT:    cmpne p1.s, p0/z, z2.s, #0
+; SVE2P2-FIXED-NEXT:    xtn v1.2s, v1.2d
+; SVE2P2-FIXED-NEXT:    cmpne p1.s, p0/z, z1.s, #0
 ; SVE2P2-FIXED-NEXT:    lastp x8, p0, p1.s
 ; SVE2P2-FIXED-NEXT:    bfi x9, x8, #3, #1
-; SVE2P2-FIXED-NEXT:    ldr x8, [x9]
-; SVE2P2-FIXED-NEXT:    fmov w9, s1
-; SVE2P2-FIXED-NEXT:    tst w9, #0x1
-; SVE2P2-FIXED-NEXT:    csel x0, x8, x0, ne
+; SVE2P2-FIXED-NEXT:    cmn x8, #1
+; SVE2P2-FIXED-NEXT:    ldr x9, [x9]
+; SVE2P2-FIXED-NEXT:    csel x0, x9, x0, ne
 ; SVE2P2-FIXED-NEXT:    add sp, sp, #16
 ; SVE2P2-FIXED-NEXT:    ret
 ;
@@ -398,14 +389,12 @@ define half @extract_last_half(<8 x half> %data, <8 x i16> %mask, half %passthru
 ; SVE2P2-FIXED-NEXT:    ptrue p0.b, vl8
 ; SVE2P2-FIXED-NEXT:    mov x9, sp
 ; SVE2P2-FIXED-NEXT:    str q0, [sp]
-; SVE2P2-FIXED-NEXT:    xtn v3.8b, v1.8h
-; SVE2P2-FIXED-NEXT:    umaxv h1, v1.8h
-; SVE2P2-FIXED-NEXT:    cmpne p1.b, p0/z, z3.b, #0
+; SVE2P2-FIXED-NEXT:    xtn v1.8b, v1.8h
+; SVE2P2-FIXED-NEXT:    cmpne p1.b, p0/z, z1.b, #0
 ; SVE2P2-FIXED-NEXT:    lastp x8, p0, p1.b
 ; SVE2P2-FIXED-NEXT:    bfi x9, x8, #1, #3
-; SVE2P2-FIXED-NEXT:    fmov w8, s1
+; SVE2P2-FIXED-NEXT:    cmn x8, #1
 ; SVE2P2-FIXED-NEXT:    ldr h0, [x9]
-; SVE2P2-FIXED-NEXT:    tst w8, #0x1
 ; SVE2P2-FIXED-NEXT:    fcsel h0, h0, h2, ne
 ; SVE2P2-FIXED-NEXT:    add sp, sp, #16
 ; SVE2P2-FIXED-NEXT:    ret
@@ -485,14 +474,12 @@ define bfloat @extract_last_bfloat(<8 x bfloat> %data, <8 x i16> %mask, bfloat %
 ; SVE2P2-FIXED-NEXT:    ptrue p0.b, vl8
 ; SVE2P2-FIXED-NEXT:    mov x9, sp
 ; SVE2P2-FIXED-NEXT:    str q0, [sp]
-; SVE2P2-FIXED-NEXT:    xtn v3.8b, v1.8h
-; SVE2P2-FIXED-NEXT:    umaxv h1, v1.8h
-; SVE2P2-FIXED-NEXT:    cmpne p1.b, p0/z, z3.b, #0
+; SVE2P2-FIXED-NEXT:    xtn v1.8b, v1.8h
+; SVE2P2-FIXED-NEXT:    cmpne p1.b, p0/z, z1.b, #0
 ; SVE2P2-FIXED-NEXT:    lastp x8, p0, p1.b
 ; SVE2P2-FIXED-NEXT:    bfi x9, x8, #1, #3
-; SVE2P2-FIXED-NEXT:    fmov w8, s1
+; SVE2P2-FIXED-NEXT:    cmn x8, #1
 ; SVE2P2-FIXED-NEXT:    ldr h0, [x9]
-; SVE2P2-FIXED-NEXT:    tst w8, #0x1
 ; SVE2P2-FIXED-NEXT:    fcsel h0, h0, h2, ne
 ; SVE2P2-FIXED-NEXT:    add sp, sp, #16
 ; SVE2P2-FIXED-NEXT:    ret
@@ -575,14 +562,12 @@ define float @extract_last_float(<4 x float> %data, <4 x i32> %mask, float %pass
 ; SVE2P2-FIXED-NEXT:    ptrue p0.h, vl4
 ; SVE2P2-FIXED-NEXT:    mov x9, sp
 ; SVE2P2-FIXED-NEXT:    str q0, [sp]
-; SVE2P2-FIXED-NEXT:    xtn v3.4h, v1.4s
-; SVE2P2-FIXED-NEXT:    umaxv s1, v1.4s
-; SVE2P2-FIXED-NEXT:    cmpne p1.h, p0/z, z3.h, #0
+; SVE2P2-FIXED-NEXT:    xtn v1.4h, v1.4s
+; SVE2P2-FIXED-NEXT:    cmpne p1.h, p0/z, z1.h, #0
 ; SVE2P2-FIXED-NEXT:    lastp x8, p0, p1.h
 ; SVE2P2-FIXED-NEXT:    bfi x9, x8, #2, #2
-; SVE2P2-FIXED-NEXT:    fmov w8, s1
+; SVE2P2-FIXED-NEXT:    cmn x8, #1
 ; SVE2P2-FIXED-NEXT:    ldr s0, [x9]
-; SVE2P2-FIXED-NEXT:    tst w8, #0x1
 ; SVE2P2-FIXED-NEXT:    fcsel s0, s0, s2, ne
 ; SVE2P2-FIXED-NEXT:    add sp, sp, #16
 ; SVE2P2-FIXED-NEXT:    ret
@@ -660,14 +645,12 @@ define double @extract_last_double(<2 x double> %data, <2 x i64> %mask, double %
 ; SVE2P2-FIXED-NEXT:    ptrue p0.s, vl2
 ; SVE2P2-FIXED-NEXT:    mov x9, sp
 ; SVE2P2-FIXED-NEXT:    str q0, [sp]
-; SVE2P2-FIXED-NEXT:    xtn v3.2s, v1.2d
-; SVE2P2-FIXED-NEXT:    umaxv s1, v1.4s
-; SVE2P2-FIXED-NEXT:    cmpne p1.s, p0/z, z3.s, #0
+; SVE2P2-FIXED-NEXT:    xtn v1.2s, v1.2d
+; SVE2P2-FIXED-NEXT:    cmpne p1.s, p0/z, z1.s, #0
 ; SVE2P2-FIXED-NEXT:    lastp x8, p0, p1.s
 ; SVE2P2-FIXED-NEXT:    bfi x9, x8, #3, #1
-; SVE2P2-FIXED-NEXT:    fmov w8, s1
+; SVE2P2-FIXED-NEXT:    cmn x8, #1
 ; SVE2P2-FIXED-NEXT:    ldr d0, [x9]
-; SVE2P2-FIXED-NEXT:    tst w8, #0x1
 ; SVE2P2-FIXED-NEXT:    fcsel d0, d0, d2, ne
 ; SVE2P2-FIXED-NEXT:    add sp, sp, #16
 ; SVE2P2-FIXED-NEXT:    ret
